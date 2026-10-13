@@ -48,7 +48,7 @@ const _pickMode = pickMode; pickMode = function (m) { _pickMode(m); if (m !== "c
 onProv();
 
 /* ---------- 5) เลือกเซฟ Local / Global ---------- */
-const SV = '<div class="chips stack sv"><button type="button" class="chip" data-m="global">🌍 Global — ทุกคนเห็นฉากจบของคุณ</button><button type="button" class="chip" data-m="local">🔒 Local — เก็บส่วนตัว</button></div><div class="mode-hint">⚠️ แอดมินตรวจสอบได้ทั้งสองแบบ เพื่อกันการใส่ชื่อบุคคลที่ไม่เหมาะสม เช่น คนที่มีแฟนแล้ว</div>';
+const SV = '<div class="chips stack sv"><button type="button" class="chip" data-m="global">🌍 Global — ทุกคนเห็นฉากจบของคุณ</button><button type="button" class="chip" data-m="local">🔒 Local — เก็บส่วนตัว</button></div><div class="mode-hint"</div>';
 $("start-btn").before(el('<div class="input-group"><label>บันทึกฉากจบแบบไหน:</label>' + SV + '</div>'));
 function setSave(m) {
   saveMode = m; try { localStorage.setItem("rt_save", m); } catch (e) {}
@@ -62,7 +62,7 @@ recordShared = async function (entry) {
   if (!shared.db) return "offline";
   try {
     await shared.db.collection(saveMode === "global" ? "endings_v2" : "private_v1").add(entry);
-    if (saveMode !== "global") setTimeout(() => { $("text").textContent = $("text").textContent.replace("✅ บันทึกลงบันทึกรวมของทุกคนแล้ว", "🔒 บันทึกแบบส่วนตัวแล้ว (แอดมินตรวจสอบได้)"); }, 50);
+    if (saveMode !== "global") setTimeout(() => { $("text").textContent = $("text").textContent.replace("✅ บันทึกลงบันทึกรวมของทุกคนแล้ว", "🔒 บันทึกแบบส่วนตัวแล้ว"); }, 50);
     return "ok";
   } catch (e) { return "fail"; }
 };
@@ -142,20 +142,20 @@ const _ch = createHeart; createHeart = function () { if (Math.random() < 0.5) _c
 
 /* Info popup */
 const INFO = `<h2>ℹ️ Info</h2>
-<p>ยินดีต้อนรับสู่เกมจีบ "รักเธอ" 💗 เปิดอ่านซ้ำได้ทุกเมื่อด้วยปุ่ม ℹ️ มุมขวาบน</p>
+<p>ยินดีต้อนรับสู่เกม "รักเธอ-Ruk Thoew" 💗 เปิดอ่านซ้ำได้ทุกเมื่อด้วยปุ่ม ℹ️ มุมขวาบน</p>
 <h3>🎮 วิธีเล่น</h3>
 <ul><li>ใส่ชื่อของคุณกับอีกคน เลือกเพศ แล้วกดเริ่มเล่น</li><li>อ่านบทสนทนา แล้วเลือกคำตอบ แต่ละคำตอบเพิ่มหรือลดความชอบ</li><li>มีฉากจบ 8 แบบ ลองเลือกต่างกันเพื่อปลดล็อกให้ครบ</li></ul>
 <h3>☰ เมนูมุมซ้ายบน</h3>
-<ul><li>🏠 หลัก: กลับหน้าเกม</li><li>🤖 AI: ตั้งวิธีตอบโต้และ API Key</li><li>💬 ย้อนอ่านแชท: ดูข้อความที่ผ่านมา</li><li>💾 ที่บันทึกฉากจบ: เลือก Global หรือ Local</li><li>ℹ️ Info: หน้านี้</li><li>🚪 ออกจากระบบ</li><li>👑 Admin Panel: เฉพาะแอดมิน</li></ul>
+<ul><li>🏠 หลัก: กลับหน้าเกม</li><li>🤖 AI: ตั้งวิธีตอบโต้และ API Key</li><li>💬 ย้อนอ่านแชท: ดูข้อความที่ผ่านมา</li><li>💾 ที่บันทึกฉากจบ: เลือก Global หรือ Local</li><li>ℹ️ Info: หน้านี้</li><li>🚪 ออกจากระบบ</li><li></li></ul>
 <h3>🤖 โหมดตอบโต้</h3>
 <ul><li>🔘 แบบปกติ (แนะนำ): เลือกช้อยส์ ไม่ต้องตั้งค่าอะไร</li><li>🤖 ช้อยส์ + AI: AI ตอบเป็นอีกคน</li><li>⌨️ พิมพ์เอง + AI: พิมพ์ตอบได้อิสระ</li></ul>
 <p>โหมด AI ต้องใส่ API Key ของคุณเอง ซึ่งส่งตรงไปยังผู้ให้บริการ ไม่ผ่านเซิร์ฟเวอร์ของเกม</p>
 <h3>💾 การบันทึกฉากจบ</h3>
-<ul><li>🌍 Global: ทุกคนเห็นฉากจบของคุณ</li><li>🔒 Local: เก็บส่วนตัว แต่แอดมินยังตรวจสอบได้</li></ul>
+<ul><li>🌍 Global: ทุกคนเห็นฉากจบของคุณ</li><li>🔒 Local: เก็บส่วนตัว</li></ul>
 <h3>📜 บันทึกฉากจบ</h3>
 <p>ปุ่มจะขึ้นที่หน้าจบเกม ดูฉากจบที่ปลดล็อกและบันทึกรวมของทุกคนได้ที่นั่น</p>
 <h3>🛡️ กติกา</h3>
-<p>กรุณาใช้ชื่อที่เหมาะสม ไม่ใช้ชื่อบุคคลที่มีแฟนแล้วหรือไม่เหมาะสม แอดมินอาจเตือน เตะ หรือแบนบัญชีที่ฝ่าฝืน</p>`;
+<p>กรุณาใช้ชื่อที่เหมาะสม ไม่ใช้ชื่อบุคคลที่มีแฟนแล้วหรือไม่เหมาะสม</p>`;
 document.body.append(el('<div id="info-modal"><div class="ibox"><button id="info-x" aria-label="ปิด">✕</button><div class="iscroll">' + INFO + '</div></div></div>'));
 $("info-x").onclick = () => rm("info-modal");
 $("info-modal").addEventListener("click", (e) => { if (e.target.id === "info-modal") rm("info-modal"); });
