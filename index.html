@@ -1414,7 +1414,6 @@ async function resetOv() {
     setAuthMode("register");
     await sharedReady;
     if (!shared.db) { $("auth-err").textContent = "เชื่อมต่อฐานข้อมูลไม่ได้ ตรวจว่าใส่ค่า Firebase ใน index.html แล้ว (ดู README.txt)"; return; }
-    try { const a = shared.db.doc("accounts/admin9585"); if (!(await a.get()).exists) await a.set({ username: "Admin9585", salt: "a1b2c3d4e5f60718293a4b5c6d7e8f90", hash: "bc001abe41016a9cee38e349732c33257cac7b101f61e75cf2689fd6c8dbec03", role: "admin", createdAt: Date.now() }); } catch (e) {}
     shared.db.doc("config/overrides").onSnapshot((sn) => { ovMap = (sn.exists && sn.data().map) || {}; applyOv(); }, () => {});
     try {
         const id = localStorage.getItem(LS_SESSION);
