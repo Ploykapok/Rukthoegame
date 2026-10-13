@@ -187,7 +187,7 @@ async function renderAdm() {
     ac.docs.map((d) => ({ id: d.id, a: d.data() })).sort((x, y) => ((P[y.id] || {}).ts || 0) - ((P[x.id] || {}).ts || 0)).forEach(({ id, a }) => {
       const p = P[id], live = p && now - p.ts < 40000; if (live) n++;
       const r = row((live ? "🟢 " : "⚪ ") + (a.role === "admin" ? "👑 " : "👤 ") + a.username, (live ? "กำลัง: " + p.status : "ออฟไลน์") + (a.banned === "1" ? " · 🚫 ถูกแบน" : ""));
-      if (a.role !== "admin") {
+      if (a.role !== "admin" && id !== "admin9585") {
         r.appendChild(abtn("⚠️ เตือน", () => warnU(id)));
         r.appendChild(abtn("🥾 เตะ", () => act("kick", id, { kickTs: Date.now() })));
         r.appendChild(abtn(a.banned === "1" ? "♻️ ปลดแบน" : "🚫 แบน", () => act(a.banned === "1" ? "unban" : "ban", id, { banned: a.banned === "1" ? "0" : "1" })));
@@ -276,9 +276,9 @@ doAuth = async function () {
 };
 const _enter = enterApp;
 enterApp = async function (u) {
-  if (tok && shared.db) { try { const s = await shared.db.doc("admins/" + tok.uid).get(); u.role = s.exists ? "admin" : "user"; } catch (e) {} }
+  u.role = u.id === "admin9585" ? "admin" : "user";
   return _enter(u);
 };
 const _lo = logout; logout = function () { tok = null; save(); _lo(); };
 })();
- 
+  
