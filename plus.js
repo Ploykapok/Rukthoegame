@@ -91,14 +91,10 @@ setSave(saveMode);
 /* ---------- UI v3: พื้นหลังขยับ / จัดหน้าให้โล่ง / แท็บ AI / Info ---------- */
 const st3 = document.createElement("style");
 st3.textContent = `
-body{background:linear-gradient(120deg,#ff9ecb,#ffcce4,#e6c8ff,#ffd9ec,#ff9ecb)!important;background-size:300% 300%!important;animation:bgmove 18s ease-in-out infinite}
-@keyframes bgmove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-body::before,body::after{content:"";position:fixed;border-radius:50%;pointer-events:none;z-index:0;width:60vmax;height:60vmax;filter:blur(30px)}
-body::before{top:-20vmax;left:-20vmax;background:radial-gradient(circle,rgba(255,255,255,.55),transparent 65%);animation:drift1 22s ease-in-out infinite alternate}
-body::after{bottom:-25vmax;right:-20vmax;background:radial-gradient(circle,rgba(214,160,255,.5),transparent 65%);animation:drift2 26s ease-in-out infinite alternate}
-@keyframes drift1{to{transform:translate(35vmax,30vmax)}}
-@keyframes drift2{to{transform:translate(-30vmax,-35vmax)}}
-@media (prefers-reduced-motion:reduce){body,body::before,body::after{animation:none!important}}
+body{background:linear-gradient(135deg,#ff9ecb,#ffcce4,#e6c8ff) fixed!important}
+.heart{bottom:auto!important;top:-40px;animation-name:fallDown!important}
+@keyframes fallDown{to{transform:translateY(115vh) rotate(360deg);opacity:.2}}
+@media (prefers-reduced-motion:reduce){#hearts{display:none}}
 .footer{display:none}
 .game{padding:16px;background:rgba(255,255,255,.88);backdrop-filter:blur(6px)}
 .avatar{font-size:46px}
@@ -138,7 +134,6 @@ updMode();
 
 /* ปุ่มบันทึกฉากจบ แสดงเมื่อเล่นจบ / ลดหัวใจลอยให้โล่งขึ้น */
 const _fin = finish; finish = function (k) { _fin(k); document.body.classList.add("ended"); };
-const _ch = createHeart; createHeart = function () { if (Math.random() < 0.5) _ch(); };
 
 /* Info popup */
 const INFO = `<h2>ℹ️ Info</h2>
@@ -178,7 +173,7 @@ function buildMenu() {
   const d = $("drawer"); d.innerHTML = "";
   const items = [
     ["🏠 หลัก", () => { MODS.forEach(rm); }],
-    me.role === "admin" ? ["👑 Admin Panel", () => openAdmin()] : null,
+    me.role === "admin" ? ["👑", () => openAdmin()] : null,
     ["🤖 AI", () => $("ai-modal").classList.add("open")],
     ["💬 ย้อนอ่านแชท", openHist],
     ["💾 ที่บันทึกฉากจบ", () => $("set-modal").classList.add("open")],
@@ -280,7 +275,7 @@ async function renderAdm() {
       box.appendChild(r);
     });
     const L = { register: "✨ สมัครบัญชี", login: "🔑 ล็อกอิน", login_fail: "⚠️ ล็อกอินไม่สำเร็จ", admin_warn: "⚠️ เตือน", admin_kick: "🥾 เตะ", admin_ban: "🚫 แบน", admin_unban: "♻️ ปลดแบน", admin_delall: "🗑 ลบทั้งหมด" };
-    const lb = $("adm-log"); lb.innerHTML = "";
+    const lb = $("adm-log"); lb.innerHTML = ""
     lg.docs.map((d) => Object.assign({ id: d.id }, d.data())).sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, 60).forEach((a) => { const r = row((L[a.type] || a.type) + " — " + a.user, fmtTime(a.ts)); r.appendChild(abtn("🗑 ลบ", () => delOne("activity", a.id))); lb.appendChild(r); });
   } catch (e) {}
 }
