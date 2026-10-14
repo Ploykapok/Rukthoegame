@@ -151,10 +151,13 @@ const INFO = `<h2>ℹ️ Info</h2>
 <p>ปุ่มจะขึ้นที่หน้าจบเกม ดูฉากจบที่ปลดล็อกและบันทึกรวมของทุกคนได้ที่นั่น</p>
 <h3>🛡️ กติกา</h3>
 <p>กรุณาใช้ชื่อที่เหมาะสม ไม่ใช้ชื่อบุคคลที่มีแฟนแล้วหรือไม่เหมาะสม</p>`;
-document.body.append(el('<div id="info-modal"><div class="ibox"><button id="info-x" aria-label="ปิด">✕</button><div class="iscroll">' + INFO + '</div></div></div>'));
+const todayStr = () => { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); };
+const infoSkipped = () => { try { return localStorage.getItem("rt_info_skip") === todayStr(); } catch (e) { return false; } };
+document.body.append(el('<div id="info-modal"><div class="ibox"><button id="info-x" aria-label="ปิด">✕</button><div class="iscroll">' + INFO + '<label style="display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #ffc3df;font-size:13px;color:#8a335d;cursor:pointer"><input type="checkbox" id="info-skip" style="width:18px;height:18px;margin:0;flex:none"><span>ไม่แสดงอีกในวันนี้</span></label></div></div></div>'));
+$("info-skip").onchange = () => { try { $("info-skip").checked ? localStorage.setItem("rt_info_skip", todayStr()) : localStorage.removeItem("rt_info_skip"); } catch (e) {} };
 $("info-x").onclick = () => rm("info-modal");
 $("info-modal").addEventListener("click", (e) => { if (e.target.id === "info-modal") rm("info-modal"); });
-function openInfo() { $("info-modal").classList.add("open"); $("info-modal").querySelector(".iscroll").scrollTop = 0; }
+function openInfo() { $("info-skip").checked = infoSkipped(); $("info-modal").classList.add("open"); $("info-modal").querySelector(".iscroll").scrollTop = 0; }
 
 /* ---------- เมนู ☰ ---------- */
 document.body.append(
@@ -209,7 +212,7 @@ enterApp = async function (u) {
   } catch (e) {}
   loginTs = Date.now(); _enter(u);
   $("tb").style.display = "flex"; $("tb-name").textContent = (u.role === "admin" ? "👑 " : "👤 ") + u.username;
-  buildMenu(); openInfo(); beat(); if (!hbT) hbT = setInterval(beat, 15000);
+  buildMenu(); if (!infoSkipped()) openInfo(); beat(); if (!hbT) hbT = setInterval(beat, 15000);
 };
 
 /* ---------- 2) Admin Panel ---------- */
@@ -275,7 +278,7 @@ async function renderAdm() {
       box.appendChild(r);
     });
     const L = { register: "✨ สมัครบัญชี", login: "🔑 ล็อกอิน", login_fail: "⚠️ ล็อกอินไม่สำเร็จ", admin_warn: "⚠️ เตือน", admin_kick: "🥾 เตะ", admin_ban: "🚫 แบน", admin_unban: "♻️ ปลดแบน", admin_delall: "🗑 ลบทั้งหมด" };
-    const lb = $("adm-log"); lb.innerHTML = ""
+    const lb = $("adm-log"); lb.innerHTML = "";
     lg.docs.map((d) => Object.assign({ id: d.id }, d.data())).sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, 60).forEach((a) => { const r = row((L[a.type] || a.type) + " — " + a.user, fmtTime(a.ts)); r.appendChild(abtn("🗑 ลบ", () => delOne("activity", a.id))); lb.appendChild(r); });
   } catch (e) {}
 }
@@ -290,7 +293,14 @@ openAdmin = function () {
 (function () {
 const KEY = FB.apiKey, LSK = "rt_auth_v1";
 let tok = null; try { tok = JSON.parse(localStorage.getItem(LSK) || "null"); } catch (e) {}
-const save = () => { try { tok ? localStorage.setItem(LSK, JSON.stringify(tok)) : localStorage.removeItem(LSK); } catch (e) {} };
+/* จำไว้ในเครื่องนี้: ไม่เก็บรหัสผ่าน เก็บเฉพาะโทเคนล็อกอินของ Firebase (ถ้าไม่เคยตั้งค่า แต่เคยล็อกอินค้างไว้ ให้ถือว่าเปิดอยู่) */
+let rem = false;
+try {
+  const r0 = localStorage.getItem("rt_remember");
+  rem = r0 === null ? !!tok : r0 === "1";
+  if (!rem) { tok = null; localStorage.removeItem(LSK); localStorage.removeItem(LS_SESSION); }
+} catch (e) {}
+const save = () => { try { tok && rem ? localStorage.setItem(LSK, JSON.stringify(tok)) : localStorage.removeItem(LSK); } catch (e) {} };
 const setTok = (j) => { tok = { id: j.idToken || j.id_token, refresh: j.refreshToken || j.refresh_token, uid: j.localId || j.user_id, exp: Date.now() + (+(j.expiresIn || j.expires_in) || 3600) * 1000 }; save(); };
 const _f = window.fetch.bind(window);
 async function idp(path, body) {
@@ -324,6 +334,8 @@ doAuth = async function () {
   if (authMode === "register" && pw !== $("auth-pass2").value) { err.textContent = "รหัสผ่านสองช่องไม่ตรงกัน"; return; }
   await sharedReady;
   if (!shared.db) { err.textContent = "เชื่อมต่อฐานข้อมูลไม่ได้"; return; }
+  rem = !!($("auth-rem") && $("auth-rem").checked);
+  try { localStorage.setItem("rt_remember", rem ? "1" : "0"); } catch (e) {}
   const btn = $("auth-go"); btn.disabled = true;
   const email = id + "@ruk.local";
   try {
@@ -332,8 +344,8 @@ doAuth = async function () {
       setTok(j);
       await shared.db.doc("accounts/" + id).set({ username: u, uid: j.localId, role: "user", createdAt: Date.now() });
       await logEvent("register", u);
-      tok = null; save();
-      setAuthMode("login", "สมัครสำเร็จ! ล็อกอินได้เลย 💗");
+      if (rem) { await logEvent("login", u); enterApp({ id: id, username: u, role: "user" }); }
+      else { tok = null; save(); setAuthMode("login", "สมัครสำเร็จ! ล็อกอินได้เลย 💗"); }
     } else {
       setTok(await idp("signInWithPassword", { email: email, password: pw, returnSecureToken: true }));
       const ref = shared.db.doc("accounts/" + id), s = await ref.get(), name = s.exists ? s.data().username : u;
@@ -347,7 +359,36 @@ doAuth = async function () {
 const _enter = enterApp;
 enterApp = async function (u) {
   u.role = u.id === "admin9585" ? "admin" : "user";
-  return _enter(u);
+  const r = await _enter(u);
+  try {
+    if (me && me.id === u.id) { rem ? localStorage.setItem(LS_SESSION, u.id) : localStorage.removeItem(LS_SESSION); }
+  } catch (e) {}
+  return r;
 };
 const _lo = logout; logout = function () { tok = null; save(); _lo(); };
+
+/* ช่องติ๊ก "จำไว้ในเครื่องนี้" ในหน้าสมัคร/ล็อกอิน */
+const rb = document.createElement("label");
+rb.style.cssText = "display:flex;align-items:center;gap:8px;width:100%;max-width:320px;margin:0 0 10px;font-size:13px;color:#8a335d;text-align:left;cursor:pointer";
+rb.innerHTML = '<input type="checkbox" id="auth-rem" style="width:18px;height:18px;margin:0;flex:none"><span>🔐 จำไว้ในเครื่องนี้ (ครั้งหน้าเข้าเล่นได้เลย)</span>';
+$("auth-err").before(rb);
+$("auth-rem").checked = rem;
+
+/* เข้าเล่นอัตโนมัติถ้าเคยเปิด "จำไว้" */
+(async () => {
+  if (!rem || !tok) return;
+  let id = null; try { id = localStorage.getItem(LS_SESSION); } catch (e) {}
+  if (!id) return;
+  try {
+    await sharedReady;
+    if (!shared.db) return;
+    await refresh();
+    if (!tok) return;
+    const sn = await shared.db.doc("accounts/" + id).get();
+    if (!sn.exists) return;
+    const d = sn.data();
+    if (d.uid && d.uid !== tok.uid) return;
+    enterApp({ id: id, username: d.username, role: "user" });
+  } catch (e) {}
+})();
 })();
