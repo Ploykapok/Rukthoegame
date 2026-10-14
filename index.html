@@ -1417,7 +1417,7 @@ async function resetOv() {
     shared.db.doc("config/overrides").onSnapshot((sn) => { ovMap = (sn.exists && sn.data().map) || {}; applyOv(); }, () => {});
     try {
         const id = localStorage.getItem(LS_SESSION);
-        if (id) { const sn = await shared.db.doc("accounts/" + id).get(); if (sn.exists) { const d = sn.data(); enterApp({ id: id, username: d.username, role: d.role === "admin" ? "admin" : "user" }); } }
+        /* เข้าเล่นอัตโนมัติ (จำไว้ในเครื่องนี้) ย้ายไปจัดการใน plus.js */
     } catch (e) {}
 })();
 </script>
